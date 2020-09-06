@@ -8,12 +8,12 @@ using System.Xml;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
-namespace Pages
+namespace pdf2.web
 {
   public class Page
   {
     private XmlDocument pagexml = new XmlDocument();
-    private string page;
+    public string page;
 
     public Page(string url)
     {

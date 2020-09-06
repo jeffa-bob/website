@@ -1,5 +1,5 @@
 ﻿@page "/"
-@using Pages;
+@using System.IO;
 
 <body>
   <div style="margin-left:-2rem; width:120%; height:40px; background-color:blue">
@@ -20,8 +20,15 @@
     url = verifystring(url);
     if (url == null)
       return;
-    
-    page = new Page(url);
+
+    newPage = new Page(url);
+
+    /*using (MemoryStream htmlSource = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(newPage.page)))
+    using (MemoryStream pdfDest = new MemoryStream())
+    {
+      ConverterProperties converterProperties = new ConverterProperties();
+      HtmlConverter.ConvertToPdf(htmlSource, pdfDest, converterProperties);
+    }*/
   }
   private string? verifystring(string url)
   {
@@ -33,8 +40,8 @@
     if (!result)
       return null;
     else
-     return url;
+      return url;
   }
-  
+
 
 }
