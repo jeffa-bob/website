@@ -17,7 +17,6 @@ jobs:
       run: dotnet publish -c Release
 
     - name: GitHub Pages
-      if: success()
       uses: crazy-max/ghaction-github-pages@v1.5.1
       with:
         target_branch: deployment
