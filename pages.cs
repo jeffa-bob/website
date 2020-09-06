@@ -8,7 +8,7 @@ using System.Xml;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
-namespace pdf2web
+namespace Pages
 {
   public class Page
   {
