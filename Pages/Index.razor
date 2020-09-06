@@ -19,7 +19,11 @@
   void urlsubmit()
   {
 
+    if (url == null)
+      return;
+
     url = verifystring(url);
+
     if (url == null)
       return;
 
