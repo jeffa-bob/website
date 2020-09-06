@@ -39,5 +39,18 @@ namespace pdf2.web
         readStream.Close();
       }
     }
+
+    public void convert()
+    {
+      getlesson();
+    }
+
+    public void getlesson()
+    {
+      XmlNodeList nodes = pagexml.SelectNodes("//nav");
+      nodes[0].ParentNode.RemoveChild(nodes[0]);
+      nodes = pagexml.SelectNodes("//footer");
+      nodes[0].ParentNode.RemoveChild(nodes[0]);
+    }
   }
 }

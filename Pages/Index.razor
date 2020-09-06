@@ -4,9 +4,9 @@
 <body>
   <div style="margin-left:-2rem; width:120%; height:40px; background-color:blue">
     <button style="margin-left: 2rem; margin-top: 0.4rem">New</button>
-      <input type="text"/>
+      <input type="text" @bind="url"/>
     <button style="margin-left: 0rem; margin-top: 0.4rem">Submit</button>
-    <button style="margin-left: 0rem; margin-top: 0.4rem">Save</button>
+    <button @onclick="urlsubmit" style="margin-left: 0rem; margin-top: 0.4rem">Save</button>
     <button style="margin-left: 0rem; margin-top: 0.4rem">Print</button>
   </div>
   <iframe bind="@newPage.page" id="page id" styles="width:50%; height:100%"></iframe>
@@ -15,15 +15,17 @@
 
 @code{
   public Page newPage {get; set;}
-  void urlsubmit(string url)
+  string url { get; set; }
+  void urlsubmit()
   {
+
     url = verifystring(url);
     if (url == null)
       return;
 
     newPage = new Page(url);
-
-    /*using (MemoryStream htmlSource = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(newPage.page)))
+    /*
+    using (MemoryStream htmlSource = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(newPage.page)))
     using (MemoryStream pdfDest = new MemoryStream())
     {
       ConverterProperties converterProperties = new ConverterProperties();
