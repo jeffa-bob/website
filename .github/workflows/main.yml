@@ -1,25 +1,25 @@
-name: DeployToGitHubPages
-env:
-  PUBLISH_DIR: /bin/Release/netstandard2.1/publish/wwwroot
+name: gh-pages
 
-# Controls when the action will run
-on:
-  push:
-    branches: [ master ]
+on: [push]
 
 jobs:
   build:
+
     runs-on: ubuntu-latest
+
     steps:
     - uses: actions/checkout@v2
-
-    - name: Publish app
-      run: dotnet publish -c Release
-
-    - name: GitHub Pages
-      uses: crazy-max/ghaction-github-pages@v1.5.1
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
       with:
-        target_branch: deployment
-        build_dir: ${{ env.PUBLISH_DIR }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        dotnet-version: 3.1.301
+    - name: Publish with dotnet
+      run: dotnet publish --configuration Release --output build
+    - name: Deploy to Github Pages
+      uses: JamesIves/github-pages-deploy-action@releases/v3
+      with:
+        ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+        BASE_BRANCH: development # The branch the action should deploy from.
+        BRANCH: development # The branch the action should deploy to.
+        FOLDER: build/wwwroot # The folder the action should deploy.
+        SINGLE_COMMIT: true
