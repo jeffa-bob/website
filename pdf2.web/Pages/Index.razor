@@ -1,0 +1,29 @@
+﻿@page "/"
+
+<body>
+  <div style="margin-left:-2rem; width:120%; height:40px; background-color:blue">
+    <button style="margin-left: 2rem; margin-top: 0.4rem">New</button>
+    <button style="margin-left: 0rem; margin-top: 0.4rem">Submit</button>
+  </div>
+  <input type="url"/>
+</body>
+
+@code{
+  void urlsubmit(string url)
+  {
+
+  }
+  /*
+  private string? verifystring(string url)
+  {
+    if (url.StartsWith("view-source:"))
+      url = url.Remove(0, 11);
+    Uri uriResult;
+    bool result = Uri.TryCreate(url, UriKind.Absolute, out uriResult)
+        && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+    if (!result)
+      return null;
+  }
+  */
+
+}
