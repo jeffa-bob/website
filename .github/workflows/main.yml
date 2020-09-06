@@ -1,6 +1,6 @@
 name: DeployToGitHubPages
 env:
-  PUBLISH_DIR: /home/runner/work/Florida-Virtual-to-EPUB/Florida-Virtual-to-EPUB/pdf2.web/bin/Release/netstandard2.1/publish/wwwroot
+  PUBLISH_DIR: /bin/Release/netstandard2.1/publish/wwwroot
 
 # Controls when the action will run
 on:
