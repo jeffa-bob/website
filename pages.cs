@@ -7,6 +7,7 @@ using System.Net;
 using System.Xml;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 
 namespace pdf2.web
 {
@@ -14,10 +15,11 @@ namespace pdf2.web
   {
     private XmlDocument pagexml = new XmlDocument();
     public string page;
+    public MarkupString pagemark { get { return new MarkupString(page); } }
     public string urlAddress;
 
 
-    public Page(string? url)
+    public Page(string? url, string @page = null)
     {
       if (url == null)
       {
@@ -26,31 +28,10 @@ namespace pdf2.web
       }
 
       urlAddress = url;
-
-      try
+      if (@page != null)
       {
-        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(urlAddress);
-        HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-        if (response.StatusCode == HttpStatusCode.OK)
-        {
-          Stream receiveStream = response.GetResponseStream();
-          StreamReader readStream = null;
-
-          if (String.IsNullOrWhiteSpace(response.CharacterSet))
-            readStream = new StreamReader(receiveStream);
-          else
-            readStream = new StreamReader(receiveStream, System.Text.Encoding.GetEncoding(response.CharacterSet));
-
-          page = readStream.ReadToEnd();
-          pagexml.LoadXml(page);
-
-          response.Close();
-          readStream.Close();
-        }
-      }
-      catch(Exception e) { 
-        page = "#document\n<!DOCTYPE html>\n<html>\n<body>\nNOT VALID\n</body>\n</html>";
-
+        this.page = @page;
+        pagexml.LoadXml(page);
       }
     }
 

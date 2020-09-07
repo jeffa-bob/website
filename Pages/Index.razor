@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using System.IO;
+@inject IJSRuntime JSRuntime;
 
 @code {public Page newPage { get; set; } = new Page(null);
   public string url { get; set; } }
@@ -13,17 +14,16 @@
   </div>
   <iframe src="@newPage.urlAddress" id="page id" style="width:48%; height:100%"></iframe>
   <iframe id="page id" style="width:50%; min-height:100%"></iframe>
+
 </body>
 
-@code{
-
-  void clear()
+@code{ void clear()
   {
     newPage = new Page(null);
     url = null;
   }
 
-  void urlsubmit()
+  async Task urlsubmit()
   {
 
     if (url == null)
@@ -35,6 +35,7 @@
       return;
 
     newPage = new Page(url);
+    await gethtml("page id");
     Console.WriteLine(newPage.page);
     /*
     using (MemoryStream htmlSource = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(newPage.page)))
@@ -44,6 +45,12 @@
       HtmlConverter.ConvertToPdf(htmlSource, pdfDest, converterProperties);
     }*/
   }
+
+  private async Task gethtml(string elem)
+  {
+    newPage.page = await JSRuntime.InvokeAsync<string>("gethtml", elem);
+  }
+
   private string? verifystring(string url)
   {
     if (url.StartsWith("view-source:"))
