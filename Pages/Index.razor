@@ -1,21 +1,28 @@
 ﻿@page "/"
 @using System.IO;
 
+@code {public Page newPage { get; set; } = new Page(null);
+  public string url { get; set; } }
 <body>
   <div style="margin-left:-2rem; width:120%; height:40px; background-color:blue">
-    <button style="margin-left: 2rem; margin-top: 0.4rem">New</button>
-      <input type="text" @bind="url"/>
-    <button style="margin-left: 0rem; margin-top: 0.4rem">Submit</button>
-    <button @onclick="urlsubmit" style="margin-left: 0rem; margin-top: 0.4rem">Save</button>
+    <button @onclick="clear" style="margin-left: 2rem; margin-top: 0.4rem">New</button>
+    <input type="text" @bind="url" width="100px" />
+    <button @onclick="urlsubmit" style="margin-left: 0rem; margin-top: 0.4rem">Submit</button>
+    <button style="margin-left: 0rem; margin-top: 0.4rem">Save</button>
     <button style="margin-left: 0rem; margin-top: 0.4rem">Print</button>
   </div>
-  <iframe bind="@newPage.page" id="page id" styles="width:50%; height:100%"></iframe>
-  <iframe styles="width:50%; height:100%"></iframe>
+  <iframe src="@newPage.urlAddress" id="page id" style="width:48%; height:100%"></iframe>
+  <iframe id="page id" style="width:50%; min-height:100%"></iframe>
 </body>
 
 @code{
-  public Page newPage {get; set;}
-  string url { get; set; }
+
+  void clear()
+  {
+    newPage = new Page(null);
+    url = null;
+  }
+
   void urlsubmit()
   {
 
@@ -28,6 +35,7 @@
       return;
 
     newPage = new Page(url);
+    Console.WriteLine(newPage.page);
     /*
     using (MemoryStream htmlSource = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(newPage.page)))
     using (MemoryStream pdfDest = new MemoryStream())
@@ -39,15 +47,9 @@
   private string? verifystring(string url)
   {
     if (url.StartsWith("view-source:"))
-      url = url.Remove(0, 11);
-    Uri uriResult;
-    bool result = Uri.TryCreate(url, UriKind.Absolute, out uriResult)
-        && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
-    if (!result)
-      return null;
-    else
+      url = url.Remove(0, 12);
+
+    if (url.StartsWith("https://") || url.StartsWith("https://"))
       return url;
-  }
-
-
-}
+    else return null;
+  } }

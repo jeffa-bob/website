@@ -14,29 +14,43 @@ namespace pdf2.web
   {
     private XmlDocument pagexml = new XmlDocument();
     public string page;
+    public string urlAddress;
 
-    public Page(string url)
+
+    public Page(string? url)
     {
-      string urlAddress = url;
-
-      HttpWebRequest request = (HttpWebRequest)WebRequest.Create(urlAddress);
-      HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-
-      if (response.StatusCode == HttpStatusCode.OK)
+      if (url == null)
       {
-        Stream receiveStream = response.GetResponseStream();
-        StreamReader readStream = null;
+        page = "#document\n<!DOCTYPE html>\n<html>\n<body>\nNOT VALID\n</body>\n</html>";
+        return;
+      }
 
-        if (String.IsNullOrWhiteSpace(response.CharacterSet))
-          readStream = new StreamReader(receiveStream);
-        else
-          readStream = new StreamReader(receiveStream, System.Text.Encoding.GetEncoding(response.CharacterSet));
+      urlAddress = url;
 
-        page = readStream.ReadToEnd();
-        pagexml.LoadXml(page);
+      try
+      {
+        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(urlAddress);
+        HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+        if (response.StatusCode == HttpStatusCode.OK)
+        {
+          Stream receiveStream = response.GetResponseStream();
+          StreamReader readStream = null;
 
-        response.Close();
-        readStream.Close();
+          if (String.IsNullOrWhiteSpace(response.CharacterSet))
+            readStream = new StreamReader(receiveStream);
+          else
+            readStream = new StreamReader(receiveStream, System.Text.Encoding.GetEncoding(response.CharacterSet));
+
+          page = readStream.ReadToEnd();
+          pagexml.LoadXml(page);
+
+          response.Close();
+          readStream.Close();
+        }
+      }
+      catch(Exception e) { 
+        page = "#document\n<!DOCTYPE html>\n<html>\n<body>\nNOT VALID\n</body>\n</html>";
+
       }
     }
 
