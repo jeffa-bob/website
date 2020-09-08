@@ -1,17 +1,62 @@
 ﻿@page "/"
 @using System.IO;
+@inject IJSRuntime JSRuntime;
 
-
+@code {public Page newPage { get; set; } = new Page(null);
+  public string url { get; set; } }
 <body>
   <div style="margin-left:-2rem; width:120%; height:40px; background-color:blue">
-    <button style="margin-left: 2rem; margin-top: 0.4rem">New</button>
-    <input type="text" width="100px" />
-    <button style="margin-left: 0rem; margin-top: 0.4rem">Submit</button>
+    <button @onclick="clear" style="margin-left: 2rem; margin-top: 0.4rem">New</button>
+    <input type="text" @bind="url" width="100px" />
+    <button @onclick="urlsubmit" style="margin-left: 0rem; margin-top: 0.4rem">Submit</button>
     <button style="margin-left: 0rem; margin-top: 0.4rem">Save</button>
     <button style="margin-left: 0rem; margin-top: 0.4rem">Print</button>
   </div>
-  <iframe id="page id" style="width:48%; height:100%"></iframe>
+  <iframe src="@newPage.urlAddress" id="page id" style="width:48%; height:100%"></iframe>
   <iframe id="page id" style="width:50%; min-height:100%"></iframe>
 
 </body>
 
+@code{ void clear()
+  {
+    newPage = new Page(null);
+    url = null;
+  }
+
+  async Task urlsubmit()
+  {
+
+    if (url == null)
+      return;
+
+    url = verifystring(url);
+
+    if (url == null)
+      return;
+
+    newPage = new Page(url);
+    await gethtml("page id");
+    Console.WriteLine(newPage.page);
+    /*
+    using (MemoryStream htmlSource = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(newPage.page)))
+    using (MemoryStream pdfDest = new MemoryStream())
+    {
+      ConverterProperties converterProperties = new ConverterProperties();
+      HtmlConverter.ConvertToPdf(htmlSource, pdfDest, converterProperties);
+    }*/
+  }
+
+  private async Task gethtml(string elem)
+  {
+    newPage.page = await JSRuntime.InvokeAsync<string>("gethtml", elem);
+  }
+
+  private string? verifystring(string url)
+  {
+    if (url.StartsWith("view-source:"))
+      url = url.Remove(0, 12);
+
+    if (url.StartsWith("https://") || url.StartsWith("https://"))
+      return url;
+    else return null;
+  } }
