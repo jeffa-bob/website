@@ -51,10 +51,10 @@
           else return null;
       }
 
-      public string? gethtmlfromurl(string urlAddress)
+      public string? gethtmlfromurl(string url)
       {
-
-          HttpWebRequest request = (HttpWebRequest)WebRequest.Create(urlAddress);
+          Uri urlAddress = new Uri(url)
+          HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(urlAddress);
           HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 
           if (response.StatusCode == HttpStatusCode.OK)
