@@ -14,11 +14,13 @@ namespace pdf2.web
         public string urlAddress;
 
 
-        public Page(string? url, string @page = null)
+        public Page(string? url, string? @page = null)
         {
             if (url == null)
             {
                 page = "#document\n<!DOCTYPE html>\n<html>\n<body>\nNOT VALID\n</body>\n</html>";
+                pagexml.LoadXml(page);
+                return;
             }
 
             urlAddress = url;
@@ -27,6 +29,7 @@ namespace pdf2.web
             {
                 this.page = @page;
                 pagexml.LoadXml(page);
+                return;
             }
         }
     }

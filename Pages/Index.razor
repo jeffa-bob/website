@@ -3,23 +3,23 @@
 @inject IJSRuntime JSRuntime;
 
 @code {public Page newPage { get; set; } = new Page(null);
-  public string url { get; set; } }
+  public string url { get; set; } = ""; }
 <body>
   <div style="margin-left:-2rem; width:120%; height:40px; background-color:blue">
-    <button @onclick="clear" style="margin-left: 2rem; margin-top: 0.4rem">New</button>
-    <input type="text" @bind="url" width="100px" />
-    <button @onclick="urlsubmit" style="margin-left: 0rem; margin-top: 0.4rem">Submit</button>
+    <button style="margin-left: 2rem; margin-top: 0.4rem">New</button>
+    <input type="text" width="100px" />
+    <button style="margin-left: 0rem; margin-top: 0.4rem">Submit</button>
     <button style="margin-left: 0rem; margin-top: 0.4rem">Save</button>
     <button style="margin-left: 0rem; margin-top: 0.4rem">Print</button>
   </div>
-  <iframe src="@newPage.urlAddress" id="page id" style="width:48%; height:100%"></iframe>
-  <iframe id="page id" style="width:50%; min-height:100%"></iframe>
+  <iframe id="page id" style="width:48%; height:500%"></iframe>
+  <iframe id="page id" style="width:50%; min-height:500%"></iframe>
 
 </body>
 
 @code{ void clear()
   {
-    newPage = new Page(null);
+    newPage = new Page(null, null);
     url = null;
   }
 
