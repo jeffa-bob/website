@@ -53,7 +53,8 @@
 
       public string? gethtmlfromurl(string url)
       {
-          Uri urlAddress = new Uri(url)
+          Console.WriteLine(url);
+          Uri urlAddress = new Uri(url);
           HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(urlAddress);
           HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 
