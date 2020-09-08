@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using System.Net;
 @using System.IO;
 
 @code{
@@ -14,13 +15,15 @@
     <button style="margin-left: 0rem; margin-top: 0.4rem">Save</button>
     <button style="margin-left: 0rem; margin-top: 0.4rem">Print</button>
   </div>
-  <iframe src="@verifystring" id="page id" style="width:48%; height:500%"></iframe>
-  <iframe id="page id" style="width:50%; min-height:500%"></iframe>
+  <iframe srcdoc="@spage" id="page id" style="width:48%; height:500%"></iframe>
+  <iframe srcdoc="@modifiedpage" id="page id" style="width:50%; min-height:500%"></iframe>
 
 </body>
 
 @code{
-  void urlsubmit()
+  public string modifiedpage;
+  public string spage;
+      void urlsubmit()
       {
           if (url != null)
           {
@@ -29,6 +32,11 @@
               {
                   verifystring = v;
                   Console.WriteLine(verifystring);
+                  string temp = gethtmlfromurl(url);
+                  if (temp != null){
+                    spage = temp;
+                    modifiedpage = temp;
+                  }
               }
           }
       }
@@ -41,5 +49,30 @@
           if (url.StartsWith("https://") || url.StartsWith("https://"))
               return url;
           else return null;
+      }
+
+      public string? gethtmlfromurl(string urlAddress)
+      {
+
+          HttpWebRequest request = (HttpWebRequest)WebRequest.Create(urlAddress);
+          HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
+          if (response.StatusCode == HttpStatusCode.OK)
+          {
+              Stream receiveStream = response.GetResponseStream();
+              StreamReader readStream = null;
+
+              if (String.IsNullOrWhiteSpace(response.CharacterSet))
+                  readStream = new StreamReader(receiveStream);
+              else
+                  readStream = new StreamReader(receiveStream, System.Text.Encoding.GetEncoding(response.CharacterSet));
+
+              string data = readStream.ReadToEnd();
+
+              response.Close();
+              readStream.Close();
+              return data;
+          }
+          return null;
       }
 }
