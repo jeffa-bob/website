@@ -12,12 +12,13 @@
     <button style="margin-left: 0rem; margin-top: 0.4rem">Save</button>
     <button style="margin-left: 0rem; margin-top: 0.4rem">Print</button>
   </div>
-  <iframe id="page id" style="width:48%; height:500%"></iframe>
+  <iframe src="@verifystring(url)" id="page id" style="width:48%; height:500%"></iframe>
   <iframe id="page id" style="width:50%; min-height:500%"></iframe>
 
 </body>
 
 @code{
+
   private string? verifystring(string url)
   {
     if (url.StartsWith("view-source:"))
