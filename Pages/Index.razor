@@ -1,14 +1,16 @@
 ﻿@page "/"
 @using System.Net.Http;
+@using HtmlAgilityPack;
 @using System.IO;
 
 @code{
     public string url { get; set; } = "";
+    public Uri uri;
 }
 
 
 <body style="height: 100%;">
-  <div style="margin-left:-2rem; width:120%; height:40px; background-color:blue">
+  <div style="margin-left:-2rem; width:104%; height:40px; background-color:blue">
     <button style="margin-left: 2rem; margin-top: 0.4rem">New</button>
     <input @bind="url" type="text" width="100px" />
     <button @onclick="urlsubmit" style="margin-left: 0rem; margin-top: 0.4rem">Submit</button>
@@ -31,32 +33,55 @@
             if (v != null)
             {
                 verifystring = v;
-                Console.WriteLine(verifystring);
+                uri = new Uri(verifystring);
                 try
                 {
                     string temp = await gethtmlfromurl(url);
                     if (temp != null)
                     {
-                        spage = temp;
-                        modifiedpage = temp;
+                        spage = relativeuri(temp);
+                        modifiedpage = spage;
+                        Console.WriteLine(spage);
+
                     }
                 }
                 catch (Exception) { }
             }
         }
     }
-    private string verifystring { get; set; }
+
+    public string relativeuri(string html)
+    {
+        StringWriter writer = new StringWriter();
+        string baseUrl = url;
+        HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
+        doc.LoadHtml(html);
+
+        foreach (var img in doc.DocumentNode.Descendants("img"))
+        {
+                img.Attributes["src"].Value = new Uri(new Uri(baseUrl), img.Attributes["src"].Value).AbsoluteUri;
+        }
+   
+        foreach (var a in doc.DocumentNode.Descendants("a"))
+        {
+                a.Attributes["href"].Value = new Uri(new Uri(baseUrl), a.Attributes["href"].Value).AbsoluteUri;
+        }
+        doc.Save(writer);
+ 
+       return writer.ToString();
+      }
+      private string verifystring { get; set; }
     private string? verifystringd(string url)
     {
         if (url.StartsWith("view-source:"))
             url = url.Remove(0, 12);
 
-        if (url.StartsWith("http://") || url.StartsWith("https://"))
+    if     (url.StartsWith("http://") || url.StartsWith("https://"))
             return url;
-        else return null;
+    else     return null;
     }
 
-    public async Task<string> gethtmlfromurl(string url)
+        public async Task<string> gethtmlfromurl(string url)
     {
         Console.WriteLine(url);
         string result;
@@ -67,7 +92,6 @@
                 using (HttpContent content = response.Content)
                 {
                     result = await content.ReadAsStringAsync();
-                    Console.WriteLine(result);
                 }
             }
         }
