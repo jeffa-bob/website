@@ -3,10 +3,9 @@
 @using HtmlAgilityPack;
 @using System.IO;
 
-@code{
-    public string url { get; set; } = "";
-    public Uri uri;
-}
+@code{ public string url { get; set; } = "";
+
+      public Uri uri; }
 
 
 <body style="height: 100%;">
@@ -22,36 +21,37 @@
 
 </body>
 
-@code{
-    public string modifiedpage;
-    public string spage;
-    async Task urlsubmit()
-    {
+@code{ public string modifiedpage;
+
+      public string spage;
+
+      async Task urlsubmit()
+      {
         if (url != null)
         {
-            string v = verifystringd(url);
-            if (v != null)
+          string v = verifystringd(url);
+          if (v != null)
+          {
+            verifystring = v;
+            uri = new Uri(verifystring);
+            try
             {
-                verifystring = v;
-                uri = new Uri(verifystring);
-                try
-                {
-                    string temp = await gethtmlfromurl(url);
-                    if (temp != null)
-                    {
-                        spage = relativeuri(temp);
-                        modifiedpage = spage;
-                        Console.WriteLine(spage);
+              string temp = await gethtmlfromurl(url);
+              if (temp != null)
+              {
+                spage = relativeuri(temp);
+                modifiedpage = spage;
+                Console.WriteLine(spage);
 
-                    }
-                }
-                catch (Exception) { }
+              }
             }
+            catch (Exception) { }
+          }
         }
-    }
+      }
 
-    public string relativeuri(string html)
-    {
+      public string relativeuri(string html)
+      {
         StringWriter writer = new StringWriter();
         string baseUrl = url;
         HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
@@ -59,42 +59,44 @@
 
         foreach (var img in doc.DocumentNode.Descendants("img"))
         {
-                img.Attributes["src"].Value = new Uri(new Uri(baseUrl), img.Attributes["src"].Value).AbsoluteUri;
+          img.Attributes["src"].Value = new Uri(new Uri(baseUrl), img.Attributes["src"].Value).AbsoluteUri;
         }
-   
+
         foreach (var a in doc.DocumentNode.Descendants("a"))
         {
-                a.Attributes["href"].Value = new Uri(new Uri(baseUrl), a.Attributes["href"].Value).AbsoluteUri;
+          a.Attributes["href"].Value = new Uri(new Uri(baseUrl), a.Attributes["href"].Value).AbsoluteUri;
         }
         doc.Save(writer);
- 
-       return writer.ToString();
+
+        return writer.ToString();
       }
+
       private string verifystring { get; set; }
-    private string? verifystringd(string url)
-    {
+
+      private string? verifystringd(string url)
+      {
         if (url.StartsWith("view-source:"))
-            url = url.Remove(0, 12);
+          url = url.Remove(0, 12);
 
-    if     (url.StartsWith("http://") || url.StartsWith("https://"))
-            return url;
-    else     return null;
-    }
+        if (url.StartsWith("http://") || url.StartsWith("https://"))
+          return url;
+        else return null;
+      }
 
-        public async Task<string> gethtmlfromurl(string url)
-    {
+      public async Task<string> gethtmlfromurl(string url)
+      {
         Console.WriteLine(url);
         string result;
         using (HttpClient client = new HttpClient())
         {
-            using (HttpResponseMessage response = await client.GetAsync(url))
+          using (HttpResponseMessage response = await client.GetAsync(url))
+          {
+            using (HttpContent content = response.Content)
             {
-                using (HttpContent content = response.Content)
-                {
-                    result = await content.ReadAsStringAsync();
-                }
+              result = await content.ReadAsStringAsync();
             }
+          }
         }
         return result;
-    }
-}
+      }
+  }
