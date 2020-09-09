@@ -16,87 +16,87 @@
     <button style="margin-left: 0rem; margin-top: 0.4rem">Save</button>
     <button style="margin-left: 0rem; margin-top: 0.4rem">Print</button>
   </div>
-  <iframe srcdoc="@spage" id="page id" style="width:48%; height:93%"></iframe>
+  <iframe src="@verifystring" id="page id" style="width:48%; height:93%"></iframe>
   <iframe srcdoc="@modifiedpage" id="page id" style="width:48%; height:93%"></iframe>
 
 </body>
 
 @code{ public string modifiedpage;
 
-      public string spage;
+  public string spage;
 
-      async Task urlsubmit()
+  async Task urlsubmit()
+  {
+    if (url != null)
+    {
+      string v = verifystringd(url);
+      if (v != null)
       {
-        if (url != null)
+        verifystring = v;
+        uri = new Uri(verifystring);
+        try
         {
-          string v = verifystringd(url);
-          if (v != null)
+          string temp = await gethtmlfromurl(url);
+          if (temp != null)
           {
-            verifystring = v;
-            uri = new Uri(verifystring);
-            try
-            {
-              string temp = await gethtmlfromurl(url);
-              if (temp != null)
-              {
-                spage = relativeuri(temp);
-                modifiedpage = spage;
-                Console.WriteLine(spage);
+            modifiedpage = relativeuri(temp);
+            Console.WriteLine(modifiedpage);
 
-              }
-            }
-            catch (Exception) { }
           }
         }
+        catch (Exception) { }
       }
+    }
+  }
 
-      public string relativeuri(string html)
+  public string relativeuri(string html)
+  {
+    StringWriter writer = new StringWriter();
+    HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
+
+    doc.LoadHtml(html);
+    HtmlNode head = doc.DocumentNode.SelectSingleNode("/html/head");
+    HtmlNode basenode = doc.CreateElement("base");
+
+    string strTest = verifystring;
+    int index = strTest.LastIndexOf("/");
+    strTest = strTest.Substring(0, index);
+    strTest += "/";
+    basenode.SetAttributeValue("href", strTest);
+    Console.WriteLine(strTest);
+    head.PrependChild(basenode);
+
+    doc.Save(writer);
+
+    return writer.ToString();
+  }
+
+  private string verifystring { get; set; }
+
+  private string? verifystringd(string url)
+  {
+    if (url.StartsWith("view-source:"))
+      url = url.Remove(0, 12);
+
+    if (url.StartsWith("http://") || url.StartsWith("https://"))
+      return url;
+    else return null;
+  }
+
+  public async Task<string> gethtmlfromurl(string url)
+  {
+    Console.WriteLine(url);
+    string result;
+    using (HttpClient client = new HttpClient())
+    {
+      using (HttpResponseMessage response = await client.GetAsync(url))
       {
-        StringWriter writer = new StringWriter();
-        string baseUrl = url;
-        HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
-        doc.LoadHtml(html);
-
-        foreach (var img in doc.DocumentNode.Descendants("img"))
+        using (HttpContent content = response.Content)
         {
-          img.Attributes["src"].Value = new Uri(new Uri(baseUrl), img.Attributes["src"].Value).AbsoluteUri;
+          result = await content.ReadAsStringAsync();
         }
-
-        foreach (var a in doc.DocumentNode.Descendants("a"))
-        {
-          a.Attributes["href"].Value = new Uri(new Uri(baseUrl), a.Attributes["href"].Value).AbsoluteUri;
-        }
-        doc.Save(writer);
-
-        return writer.ToString();
       }
-
-      private string verifystring { get; set; }
-
-      private string? verifystringd(string url)
-      {
-        if (url.StartsWith("view-source:"))
-          url = url.Remove(0, 12);
-
-        if (url.StartsWith("http://") || url.StartsWith("https://"))
-          return url;
-        else return null;
-      }
-
-      public async Task<string> gethtmlfromurl(string url)
-      {
-        Console.WriteLine(url);
-        string result;
-        using (HttpClient client = new HttpClient())
-        {
-          using (HttpResponseMessage response = await client.GetAsync(url))
-          {
-            using (HttpContent content = response.Content)
-            {
-              result = await content.ReadAsStringAsync();
-            }
-          }
-        }
-        return result;
-      }
+    }
+    return result;
+  }
   }
