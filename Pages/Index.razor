@@ -1,13 +1,13 @@
 ﻿@page "/"
-@using System.Net;
+@using System.Net.Http;
 @using System.IO;
 
 @code{
-  public string url { get; set; } = "";
+    public string url { get; set; } = "";
 }
 
 
-<body>
+<body style="height: 100%;">
   <div style="margin-left:-2rem; width:120%; height:40px; background-color:blue">
     <button style="margin-left: 2rem; margin-top: 0.4rem">New</button>
     <input @bind="url" type="text" width="100px" />
@@ -15,65 +15,62 @@
     <button style="margin-left: 0rem; margin-top: 0.4rem">Save</button>
     <button style="margin-left: 0rem; margin-top: 0.4rem">Print</button>
   </div>
-  <iframe srcdoc="@spage" id="page id" style="width:48%; height:500%"></iframe>
-  <iframe srcdoc="@modifiedpage" id="page id" style="width:50%; min-height:500%"></iframe>
+  <iframe srcdoc="@spage" id="page id" style="width:48%; height:100%"></iframe>
+  <iframe srcdoc="@modifiedpage" id="page id" style="width:50%; height:100%"></iframe>
 
 </body>
 
 @code{
-  public string modifiedpage;
-  public string spage;
-      void urlsubmit()
-      {
-          if (url != null)
-          {
-              string v = verifystringd(url);
-              if (v != null)
-              {
-                  verifystring = v;
-                  Console.WriteLine(verifystring);
-                  string temp = gethtmlfromurl(url);
-                  if (temp != null){
-                    spage = temp;
-                    modifiedpage = temp;
-                  }
-              }
-          }
-      }
-      private string verifystring { get; set; }
-      private string? verifystringd(string url)
-      {
-          if (url.StartsWith("view-source:"))
-              url = url.Remove(0, 12);
+    public string modifiedpage;
+    public string spage;
+    async Task urlsubmit()
+    {
+        if (url != null)
+        {
+            string v = verifystringd(url);
+            if (v != null)
+            {
+                verifystring = v;
+                Console.WriteLine(verifystring);
+                try
+                {
+                    string temp = await gethtmlfromurl(url);
+                    if (temp != null)
+                    {
+                        spage = temp;
+                        modifiedpage = temp;
+                    }
+                }
+                catch (Exception) { }
+            }
+        }
+    }
+    private string verifystring { get; set; }
+    private string? verifystringd(string url)
+    {
+        if (url.StartsWith("view-source:"))
+            url = url.Remove(0, 12);
 
-          if (url.StartsWith("https://") || url.StartsWith("https://"))
-              return url;
-          else return null;
-      }
+        if (url.StartsWith("http://") || url.StartsWith("https://"))
+            return url;
+        else return null;
+    }
 
-      public string? gethtmlfromurl(string url)
-      {
-          Console.WriteLine(url);
-          Uri urlAddress = new Uri(url);
-          HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(urlAddress);
-          HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-
-          if (response.StatusCode == HttpStatusCode.OK)
-          {
-              Stream receiveStream = response.GetResponseStream();
-              StreamReader readStream = null;
-
-              if (String.IsNullOrWhiteSpace(response.CharacterSet))
-                  readStream = new StreamReader(receiveStream);
-              else
-                  readStream = new StreamReader(receiveStream, System.Text.Encoding.GetEncoding(response.CharacterSet));
-
-              string data = readStream.ReadToEnd();
-
-              response.Close();
-              readStream.Close();
-              return data;
-          }
-          return null;
-      }
+    public async Task<string> gethtmlfromurl(string url)
+    {
+        Console.WriteLine(url);
+        string result;
+        using (HttpClient client = new HttpClient())
+        {
+            using (HttpResponseMessage response = await client.GetAsync(url))
+            {
+                using (HttpContent content = response.Content)
+                {
+                    result = await content.ReadAsStringAsync();
+                    Console.WriteLine(result);
+                }
+            }
+        }
+        return result;
+    }
 }
