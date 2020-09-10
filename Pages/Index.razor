@@ -3,9 +3,11 @@
 @using HtmlAgilityPack;
 @using System.IO;
 
-@code{ public string url { get; set; } = "";
+@code{
+    public string url { get; set; } = "";
 
-  public Uri uri; }
+    public Uri uri;
+}
 
 
 <body style="height: 100%;">
@@ -21,106 +23,119 @@
 
 </body>
 
-@code{ public string modifiedpage;
+@code{
+    public string modifiedpage;
 
-  public string spage;
+    public string spage;
 
-  private string verifystring { get; set; }
+    private string verifystring { get; set; }
 
 
-  async Task urlsubmit()
-  {
-    if (url != null)
+    async Task urlsubmit()
     {
-      string v = verifystringd(url);
-      if (v != null)
-      {
-        verifystring = v;
-        uri = new Uri(verifystring);
-        try
+        if (url != null)
         {
-          string temp = await gethtmlfromurl(url);
-          if (temp != null)
-          {
-            modifiedpage = relativeuri(temp);
-            //modifiedpage = temp;
-            Console.WriteLine(modifiedpage);
+            string v = verifystringd(url);
+            if (v != null)
+            {
+                verifystring = v;
+                uri = new Uri(verifystring);
+                try
+                {
+                    string temp = await gethtmlfromurl(url);
+                    if (temp != null)
+                    {
+                        modifiedpage = joindocs(await extractpages(temp));
+                        //modifiedpage = temp;
+                        Console.WriteLine(modifiedpage);
 
-          }
+                    }
+                }
+                catch (Exception) { }
+            }
         }
-        catch (Exception) { }
-      }
-    }
-  }
-
-  public List<string> extractpages(string html)
-  {
-    HtmlDocument doc = new HtmlDocument();
-    doc.LoadHtml(html);
-    try
-    {
-      HtmlAgilityPack.HtmlNodeCollection nodes = doc.DocumentNode.SelectNodes("//div[@class=\"page_links\"]");
-      if(nodes == null)
-        throw new ArgumentException("does not contain page links");
-
-      foreach (HtmlAgilityPack.HtmlNode node in nodes)
-      {
-        //Do you say you want to access to <h2>, <p> here?
-        //You can do:
-        HtmlNodeCollection allaNodes = node.SelectNodes(".//a"); //That will search in depth too
-
-        //And you can also take a look at the children, without using XPath (like in a tree):        
-      }
-    }
-    return new List<string>(1);
-  }
-
-
-  public string relativeuri(string html)
-  {
-    StringWriter writer = new StringWriter();
-    HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
-
-    string baseUrl = url;
-    doc.LoadHtml(html);
-    foreach (var img in doc.DocumentNode.Descendants("img"))
-    {
-      img.Attributes["src"].Value = new Uri(new Uri(baseUrl), img.Attributes["src"].Value).AbsoluteUri;
     }
 
-
-    foreach (var a in doc.DocumentNode.Descendants("a"))
+    public async Task<List<string>> extractpages(string url)
     {
-      a.Attributes["href"].Value = new Uri(new Uri(baseUrl), a.Attributes["href"].Value).AbsoluteUri;
-    }
-    doc.Save(writer);
-
-    return writer.ToString();
-  }
-
-  private string? verifystringd(string url)
-  {
-    if (url.StartsWith("view-source:"))
-      url = url.Remove(0, 12);
-
-    if (url.StartsWith("http://") || url.StartsWith("https://"))
-      return url;
-    else return null;
-  }
-
-  public async Task<string> gethtmlfromurl(string url)
-  {
-    Console.WriteLine(url);
-    string result;
-    using (HttpClient client = new HttpClient())
-    {
-      using (HttpResponseMessage response = await client.GetAsync(url))
-      {
-        using (HttpContent content = response.Content)
+        List<string> final = new List<string>();
+        for (int i = 0; i < 10; i++)
         {
-          result = await content.ReadAsStringAsync();
+            string tempurl = url;
+            tempurl.Insert(tempurl.LastIndexOf(".") - 1, i.ToString());
+            try
+            {
+                string temp = await gethtmlfromurl(tempurl);
+                final.Add(temp);
+            }
+            catch (Exception) { break; }
         }
-      }
+        return final;
     }
-    return result;
-  } }
+
+    public string joindocs(List<string> docs)
+    {
+        StringWriter writer = new StringWriter();
+        List<HtmlDocument> htmldocs = new List<HtmlDocument>();
+        foreach (string doc in docs)
+        {
+            HtmlDocument htmldoc = new HtmlDocument();
+            htmldoc.LoadHtml(relativeuri(doc));
+            htmldocs.Add(htmldoc);
+        }
+        foreach (HtmlDocument htmldoc in htmldocs)
+        {
+            htmldoc.Save(writer);
+        }
+        return writer.ToString();
+    }
+
+    public string relativeuri(string html)
+    {
+        StringWriter writer = new StringWriter();
+        HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
+
+        string baseUrl = url;
+        doc.LoadHtml(html);
+        foreach (var img in doc.DocumentNode.Descendants("img"))
+        {
+            img.Attributes["src"].Value = new Uri(new Uri(baseUrl), img.Attributes["src"].Value).AbsoluteUri;
+        }
+
+
+        foreach (var a in doc.DocumentNode.Descendants("a"))
+        {
+            a.Attributes["href"].Value = new Uri(new Uri(baseUrl), a.Attributes["href"].Value).AbsoluteUri;
+        }
+        doc.Save(writer);
+
+        return writer.ToString();
+    }
+
+    private string? verifystringd(string url)
+    {
+        if (url.StartsWith("view-source:"))
+            url = url.Remove(0, 12);
+
+        if (url.StartsWith("http://") || url.StartsWith("https://"))
+            return url;
+        else return null;
+    }
+
+    public async Task<string> gethtmlfromurl(string url)
+    {
+        Console.WriteLine(url);
+        string result;
+        using (HttpClient client = new HttpClient())
+        {
+            using (HttpResponseMessage response = await client.GetAsync(url))
+            {
+                using (HttpContent content = response.Content)
+                {
+                    result = await content.ReadAsStringAsync();
+                }
+            }
+        }
+        return result;
+    }
+}
