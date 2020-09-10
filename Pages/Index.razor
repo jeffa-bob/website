@@ -5,7 +5,7 @@
 
 @code{ public string url { get; set; } = "";
 
-      public Uri uri; }
+  public Uri uri; }
 
 
 <body style="height: 100%;">
@@ -25,6 +25,9 @@
 
   public string spage;
 
+  private string verifystring { get; set; }
+
+
   async Task urlsubmit()
   {
     if (url != null)
@@ -40,6 +43,7 @@
           if (temp != null)
           {
             modifiedpage = relativeuri(temp);
+            //modifiedpage = temp;
             Console.WriteLine(modifiedpage);
 
           }
@@ -49,29 +53,50 @@
     }
   }
 
+  public List<string> extractpages(string html)
+  {
+    HtmlDocument doc = new HtmlDocument();
+    doc.LoadHtml(html);
+    try
+    {
+      HtmlAgilityPack.HtmlNodeCollection nodes = doc.DocumentNode.SelectNodes("//div[@class=\"page_links\"]");
+      if(nodes == null)
+        throw new ArgumentException("does not contain page links");
+
+      foreach (HtmlAgilityPack.HtmlNode node in nodes)
+      {
+        //Do you say you want to access to <h2>, <p> here?
+        //You can do:
+        HtmlNodeCollection allaNodes = node.SelectNodes(".//a"); //That will search in depth too
+
+        //And you can also take a look at the children, without using XPath (like in a tree):        
+      }
+    }
+    return new List<string>(1);
+  }
+
+
   public string relativeuri(string html)
   {
     StringWriter writer = new StringWriter();
     HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
 
+    string baseUrl = url;
     doc.LoadHtml(html);
-    HtmlNode head = doc.DocumentNode.SelectSingleNode("/html/head");
-    HtmlNode basenode = doc.CreateElement("base");
+    foreach (var img in doc.DocumentNode.Descendants("img"))
+    {
+      img.Attributes["src"].Value = new Uri(new Uri(baseUrl), img.Attributes["src"].Value).AbsoluteUri;
+    }
 
-    string strTest = verifystring;
-    int index = strTest.LastIndexOf("/");
-    strTest = strTest.Substring(0, index);
-    strTest += "/";
-    basenode.SetAttributeValue("href", strTest);
-    Console.WriteLine(strTest);
-    head.PrependChild(basenode);
 
+    foreach (var a in doc.DocumentNode.Descendants("a"))
+    {
+      a.Attributes["href"].Value = new Uri(new Uri(baseUrl), a.Attributes["href"].Value).AbsoluteUri;
+    }
     doc.Save(writer);
 
     return writer.ToString();
   }
-
-  private string verifystring { get; set; }
 
   private string? verifystringd(string url)
   {
@@ -98,5 +123,4 @@
       }
     }
     return result;
-  }
-  }
+  } }
