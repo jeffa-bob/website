@@ -19,6 +19,8 @@ namespace pdf2.web
 
       builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
+      Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
       await builder.Build().RunAsync();
     }
   }
