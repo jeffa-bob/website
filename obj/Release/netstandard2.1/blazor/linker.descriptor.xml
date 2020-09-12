@@ -1,0 +1,5 @@
+﻿<linker>
+  <assembly fullname="pdf2.web">
+    <type fullname="*" required="true" />
+  </assembly>
+</linker>
